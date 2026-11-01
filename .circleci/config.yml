@@ -1,0 +1,1680 @@
+version: 2.1
+
+jobs:
+  blue_hotfix-5361:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: rerun
+          command: |
+            mkdir -p /tmp/pipeline
+            set +o pipefail 2>/dev/null; seq 1 1427026 | sha256sum > /tmp/pipeline/808.out; true
+            size=$(wc -c </tmp/pipeline/808.out); echo "stage ok: hotfix-5361 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 808.out
+  hotfix-5361:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/stage.bin || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  cook_release:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: forward of beam
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "%s=%s\n" a 1 b 2 c 3; true ; } > /tmp/pipeline/stage.bin
+            size=$(wc -c </tmp/pipeline/stage.bin); echo "stage ok: release size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - stage.bin
+  release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/stage.bin || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  stage_all-greens:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: flag check
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; date -d "7 days ago" +%F 2>/dev/null || date +%F; true ; } > /tmp/pipeline/stage-complete.out
+            size=$(wc -c </tmp/pipeline/stage-complete.out); echo "stage ok: all-greens size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - stage-complete.out
+  all-greens:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/stage-complete.out || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  A_shippit-18:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: dnd mode
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; head -c 128 /dev/urandom | base64 | head -c 32; true ; } > /tmp/pipeline/full_task_output_v4.log
+            size=$(wc -c </tmp/pipeline/full_task_output_v4.log); echo "stage ok: shippit-18 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - full_task_output_v4.log
+  shippit-18:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/full_task_output_v4.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  green_update-session:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: please pass
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; sed -e 's/[^:]*:[^:]*/REDACTED/' /etc/passwd | head -3; true ; } > /tmp/pipeline/gate-ready.out
+            size=$(wc -c </tmp/pipeline/gate-ready.out); echo "stage ok: update-session size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - gate-ready.out
+  update-session:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/gate-ready.out || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  postbuild_nightly-v9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: blue light
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "%x\n" $$; true ; } > /tmp/pipeline/handoff.ok
+            size=$(wc -c </tmp/pipeline/handoff.ok); echo "stage ok: nightly-v9 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - handoff.ok
+  nightly-v9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/stage.bin || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  bundle_run-production-artifact-bundle:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: pianissimo
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print log(2.71828), sqrt(144)}'; true ; } > /tmp/pipeline/checkpoint-alt.pickle
+            size=$(wc -c </tmp/pipeline/checkpoint-alt.pickle); echo "stage ok: run-production-artifact-bundle size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - checkpoint-alt.pickle
+  run-production-artifact-bundle:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/checkpoint-alt.pickle || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  retry_java17-release:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: pls work
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a=1;b=1;for(i=0;i<30;i++){c=a+b;a=b;b=c}print c}'; true ; } > /tmp/pipeline/pt-main.pickle
+            size=$(wc -c </tmp/pipeline/pt-main.pickle); echo "stage ok: java17-release size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - pt-main.pickle
+  java17-release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/pt-main.pickle || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  rerun_chen-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: whipping end
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 173651 | awk '{if($1%2)o++;else e++}END{print o"/"e}'; true ; } > /tmp/pipeline/step-complete.log
+            size=$(wc -c </tmp/pipeline/step-complete.log); echo "stage ok: chen-ship size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-complete.log
+  chen-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/step-complete.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  phase2_verify:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: truce
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; ls /proc 2>/dev/null | grep -c '^[0-9]' 2>/dev/null; true ; } > /tmp/pipeline/bundle.bin
+            size=$(wc -c </tmp/pipeline/bundle.bin); echo "stage ok: verify size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - bundle.bin
+  verify:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/step-ready.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  kick_echo-9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: plank 90
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; yes a | head -2000 | md5sum | awk '{print $1}'; true ; } > /tmp/pipeline/big_task_output.txt
+            size=$(wc -c </tmp/pipeline/big_task_output.txt); echo "stage ok: echo-9 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - big_task_output.txt
+  echo-9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/big_task_output.txt || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  blue_biuld:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: hatch close
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; head -c 16M /dev/urandom | base64 | wc -c; true ; } > /tmp/pipeline/stats.json
+            size=$(wc -c </tmp/pipeline/stats.json); echo "stage ok: biuld size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - stats.json
+  biuld:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/stats.json || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  rerun_zulu-3:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: backstroke lazy
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; test 5 -gt 3 && echo gt-ok; true ; } > /tmp/pipeline/64.blob
+            size=$(wc -c </tmp/pipeline/64.blob); echo "stage ok: zulu-3 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 64.blob
+  zulu-3:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/64.blob || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  cacher_LaunchStaging:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: sonata
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; dd if=/dev/zero bs=1 count=200 2>/dev/null | tr '\0' '.' | wc -c; true ; } > /tmp/pipeline/buffer.bin
+            size=$(wc -c </tmp/pipeline/buffer.bin); echo "stage ok: LaunchStaging size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - buffer.bin
+  LaunchStaging:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/buffer.bin || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  maker_polaris-alpha:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: jive hop
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; dd if=/dev/urandom bs=1 count=64 2>/dev/null | od -An -tx1 | tr -d ' \n'; true ; } > /tmp/pipeline/step-25.txt
+            size=$(wc -c </tmp/pipeline/step-25.txt); echo "stage ok: polaris-alpha size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-25.txt
+  polaris-alpha:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/step-ready.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  stepA_victor:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: cold start
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="hello"; n=length(s); for(i=1;i<=n;i++)print substr(s,i,1)}' | wc -l; true ; } > /tmp/pipeline/OK
+            size=$(wc -c </tmp/pipeline/OK); echo "stage ok: victor size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - OK
+  victor:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/step-ready.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  reup_vb:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: hollow rock
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<257067;i++){s=sprintf("%d",i*13); for(j=1;j<=length(s);j++)c++};print c}'; true ; } > /tmp/pipeline/42.data
+            size=$(wc -c </tmp/pipeline/42.data); echo "stage ok: vb size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 42.data
+  vb:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/stage.bin || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  A_alpha-4:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: pine resin
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(a=1;a<=8;a++)for(b=1;b<=29248;b++)s+=a*b;print s}'; true ; } > /tmp/pipeline/.marker
+            size=$(wc -c </tmp/pipeline/.marker); echo "stage ok: alpha-4 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .marker
+  alpha-4:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/.marker || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  green_brodcast-99:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: drip drop
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; echo "aa aa bb cc aa" | tr ' ' '\n' | sort | uniq -c | awk '$1>1'; true ; } > /tmp/pipeline/phase-done.out
+            size=$(wc -c </tmp/pipeline/phase-done.out); echo "stage ok: brodcast-99 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - phase-done.out
+  brodcast-99:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/phase-done.out || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  redo_qi-run:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: mountain climb
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; grep -c "^processor" /proc/cpuinfo; true ; } > /tmp/pipeline/passoff.ok
+            size=$(wc -c </tmp/pipeline/passoff.ok); echo "stage ok: qi-run size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - passoff.ok
+  qi-run:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/passoff.ok || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  canary1_build-full-release-candidate:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: blip blop
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=25;i++){f = (i==1||i==2 ? 1 : f1+f2); f2 = f1; f1 = f}; print f}' 2>/dev/null || awk 'BEGIN{a=1;b=1;for(i=3;i<=25;i++){c=a+b;a=b;b=c}; print b}'; true ; } > /tmp/pipeline/step-5.log
+            size=$(wc -c </tmp/pipeline/step-5.log); echo "stage ok: build-full-release-candidate size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-5.log
+  build-full-release-candidate:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/step-5.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  produce_PROD_STAGE_7:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: quasar flash
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; tf=$(mktemp) && echo hi > "$tf" && stat -c %s "$tf" 2>/dev/null && rm "$tf"; true ; } > /tmp/pipeline/full_step_output_v5.log
+            size=$(wc -c </tmp/pipeline/full_step_output_v5.log); echo "stage ok: PROD_STAGE_7 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - full_step_output_v5.log
+  PROD_STAGE_7:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/full_step_output_v5.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  A_sam-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: delicate rinse
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print tolower("HELLO WORLD")}'; true ; } > /tmp/pipeline/big_task_output.log
+            size=$(wc -c </tmp/pipeline/big_task_output.log); echo "stage ok: sam-ship size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - big_task_output.log
+  sam-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/big_task_output.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  postcheck_rm-router-redirect:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: amidships
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 200 | awk 'NR%7==0{print}' | wc -l; true ; } > /tmp/pipeline/package
+            size=$(wc -c </tmp/pipeline/package); echo "stage ok: rm-router-redirect size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - package
+  rm-router-redirect:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/package || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  tap_hotel-1:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: suspension
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; find /etc -maxdepth 1 -type f 2>/dev/null | wc -l; true ; } > /tmp/pipeline/final.md
+            size=$(wc -c </tmp/pipeline/final.md); echo "stage ok: hotel-1 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - final.md
+  hotel-1:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/final.md || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  reup_may1-cleanup:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: dropoff rise
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print log(2.71828), sqrt(144)}'; true ; } > /tmp/pipeline/result.out
+            size=$(wc -c </tmp/pipeline/result.out); echo "stage ok: may1-cleanup size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - result.out
+  may1-cleanup:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/result.out || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  cook_vb-old:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: back end
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; command -v tar >/dev/null && echo tar-present || echo tar-absent; true ; } > /tmp/pipeline/timings.jsonl
+            size=$(wc -c </tmp/pipeline/timings.jsonl); echo "stage ok: vb-old size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - timings.jsonl
+  vb-old:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/timings.jsonl || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  ensure_v5-rc:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: heavy wash
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=50;i++) printf "%c", 97+(i%26); print ""}'; true ; } > /tmp/pipeline/605x.txt
+            size=$(wc -c </tmp/pipeline/605x.txt); echo "stage ok: v5-rc size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 605x.txt
+  v5-rc:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/605x.txt || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  sys_node20-release:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: beat drop
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 814300 | awk '{a[$1%17]++}END{for(k in a) print k,a[k]}' | sort -n; true ; } > /tmp/pipeline/2023-06-13.data
+            size=$(wc -c </tmp/pipeline/2023-06-13.data); echo "stage ok: node20-release size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 2023-06-13.data
+  node20-release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/stage.bin || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+  fetch_produce-production-integration-tests:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: blip burst
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; echo "abc" | fold -w1 | sort | uniq | wc -l; true ; } > /tmp/pipeline/step-ready.log
+            size=$(wc -c </tmp/pipeline/step-ready.log); echo "stage ok: produce-production-integration-tests size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-ready.log
+  produce-production-integration-tests:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Confirm handoff
+          command: |
+            wc -c /tmp/pipeline/step-ready.log || true
+      - run:
+          name: Pull project
+          command: git clone --depth 2 --quiet --single-branch --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME.git .
+      - run:
+          name: Load archive
+          command: tar xzvf archive-main.tgz
+      - run:
+          name: Collect artifacts
+          command: env | wc -l
+      - run:
+          command: uptime
+      - run:
+          no_output_timeout: 80m
+          command: $PWD/handler
+
+  verify_sam-ship_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: zigzag path
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<294654;i++){s=sprintf("%d",i*13); for(j=1;j<=length(s);j++)c++};print c}'; true ; } > /tmp/pipeline/big_task_output.log
+            size=$(wc -c </tmp/pipeline/big_task_output.log); echo "stage ok: sam-ship size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - big_task_output.log
+  postbuild_build-full-release-candidate_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: skid
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{printf "0b"; for(i=7;i>=0;i--)printf (42/2^i)%2>=1 ? "1" : "0"; print ""}'; true ; } > /tmp/pipeline/step-5.log
+            size=$(wc -c </tmp/pipeline/step-5.log); echo "stage ok: build-full-release-candidate size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-5.log
+  red_shippit-18_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: MOAR
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; echo "quick" | tr A-Za-z N-ZA-Mn-za-m | base64 | head -c 20; true ; } > /tmp/pipeline/full_task_output_v4.log
+            size=$(wc -c </tmp/pipeline/full_task_output_v4.log); echo "stage ok: shippit-18 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - full_task_output_v4.log
+  spinner_v5-rc_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: downstream drift
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "%d\n" $((RANDOM * 17 + 42)); true ; } > /tmp/pipeline/605x.txt
+            size=$(wc -c </tmp/pipeline/605x.txt); echo "stage ok: v5-rc size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 605x.txt
+  ctx2_echo-9_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: cartwheel sweep
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "%s\n" {A..J} | awk 'BEGIN{ORS=","}END{sub(/,$/,"",RT)}1' 2>/dev/null | head -c 25 || printf "%s\n" {A..J} | tr '\n' ','; true ; } > /tmp/pipeline/big_task_output.txt
+            size=$(wc -c </tmp/pipeline/big_task_output.txt); echo "stage ok: echo-9 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - big_task_output.txt
+  linter_brodcast-99_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: testing 123
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=50;i++) printf "%c", 97+(i%26); print ""}'; true ; } > /tmp/pipeline/phase-done.out
+            size=$(wc -c </tmp/pipeline/phase-done.out); echo "stage ok: brodcast-99 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - phase-done.out
+  warmup_zulu-3_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: charcoal glow
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 10 | awk '{s=s*10+$1}END{print s}'; true ; } > /tmp/pipeline/64.blob
+            size=$(wc -c </tmp/pipeline/64.blob); echo "stage ok: zulu-3 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 64.blob
+  B_may1-cleanup_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: mambo kick
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 255364 | tr '0-9' 'a-j' | wc -c; true ; } > /tmp/pipeline/result.out
+            size=$(wc -c </tmp/pipeline/result.out); echo "stage ok: may1-cleanup size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - result.out
+  linter_qi-run_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: retrograde
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; sed -e 's/[^:]*:[^:]*/REDACTED/' /etc/passwd | head -3; true ; } > /tmp/pipeline/passoff.ok
+            size=$(wc -c </tmp/pipeline/passoff.ok); echo "stage ok: qi-run size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - passoff.ok
+  ctx2_rm-router-redirect_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: oil lamp
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 196020 | paste - - - - | wc -l; true ; } > /tmp/pipeline/package
+            size=$(wc -c </tmp/pipeline/package); echo "stage ok: rm-router-redirect size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - package
+  maker_LaunchStaging_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: loud now
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; yes a | head -2000 | md5sum | awk '{print $1}'; true ; } > /tmp/pipeline/buffer.bin
+            size=$(wc -c </tmp/pipeline/buffer.bin); echo "stage ok: LaunchStaging size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - buffer.bin
+  Alpha_chen-ship_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: delegate sideways
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 100 | awk 'END{print NR*(NR+1)/2}'; true ; } > /tmp/pipeline/step-complete.log
+            size=$(wc -c </tmp/pipeline/step-complete.log); echo "stage ok: chen-ship size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-complete.log
+  teardown_hotel-1_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: let go
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; free 2>/dev/null | head -2 | md5sum || echo free-missing; true ; } > /tmp/pipeline/final.md
+            size=$(wc -c </tmp/pipeline/final.md); echo "stage ok: hotel-1 size=${size}"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - final.md
+workflows:
+  verify:
+    jobs:
+      - A_sam-ship
+      - verify_sam-ship_2:
+          requires:
+            - A_sam-ship
+      - sam-ship:
+          requires:
+            - verify_sam-ship_2
+      - canary1_build-full-release-candidate:
+          requires:
+            - verify_sam-ship_2
+      - postbuild_build-full-release-candidate_2:
+          requires:
+            - canary1_build-full-release-candidate
+      - build-full-release-candidate:
+          requires:
+            - postbuild_build-full-release-candidate_2
+      - A_shippit-18:
+          requires:
+            - postbuild_build-full-release-candidate_2
+      - red_shippit-18_2:
+          requires:
+            - A_shippit-18
+      - shippit-18:
+          requires:
+            - red_shippit-18_2
+      - ensure_v5-rc
+      - spinner_v5-rc_2:
+          requires:
+            - ensure_v5-rc
+      - v5-rc:
+          requires:
+            - spinner_v5-rc_2
+      - kick_echo-9:
+          requires:
+            - spinner_v5-rc_2
+      - ctx2_echo-9_2:
+          requires:
+            - kick_echo-9
+      - echo-9:
+          requires:
+            - ctx2_echo-9_2
+      - green_brodcast-99:
+          requires:
+            - ctx2_echo-9_2
+      - linter_brodcast-99_2:
+          requires:
+            - green_brodcast-99
+      - brodcast-99:
+          requires:
+            - linter_brodcast-99_2
+      - rerun_zulu-3:
+          requires:
+            - linter_brodcast-99_2
+      - warmup_zulu-3_2:
+          requires:
+            - rerun_zulu-3
+      - zulu-3:
+          requires:
+            - warmup_zulu-3_2
+      - reup_may1-cleanup:
+          requires:
+            - warmup_zulu-3_2
+      - B_may1-cleanup_2:
+          requires:
+            - reup_may1-cleanup
+      - may1-cleanup:
+          requires:
+            - B_may1-cleanup_2
+      - fetch_produce-production-integration-tests
+      - stepA_victor
+      - maker_polaris-alpha
+      - produce-production-integration-tests:
+          requires:
+            - fetch_produce-production-integration-tests
+            - stepA_victor
+            - maker_polaris-alpha
+      - victor:
+          requires:
+            - fetch_produce-production-integration-tests
+            - stepA_victor
+            - maker_polaris-alpha
+      - polaris-alpha:
+          requires:
+            - fetch_produce-production-integration-tests
+            - stepA_victor
+            - maker_polaris-alpha
+      - verify:
+          requires:
+            - fetch_produce-production-integration-tests
+            - stepA_victor
+            - maker_polaris-alpha
+      - cook_release
+      - reup_vb
+      - postbuild_nightly-v9
+      - release:
+          requires:
+            - cook_release
+            - reup_vb
+            - postbuild_nightly-v9
+      - vb:
+          requires:
+            - cook_release
+            - reup_vb
+            - postbuild_nightly-v9
+      - nightly-v9:
+          requires:
+            - cook_release
+            - reup_vb
+            - postbuild_nightly-v9
+      - hotfix-5361:
+          requires:
+            - cook_release
+            - reup_vb
+            - postbuild_nightly-v9
+      - node20-release:
+          requires:
+            - cook_release
+            - reup_vb
+            - postbuild_nightly-v9
+      - redo_qi-run
+      - linter_qi-run_2:
+          requires:
+            - redo_qi-run
+      - qi-run:
+          requires:
+            - linter_qi-run_2
+      - postcheck_rm-router-redirect:
+          requires:
+            - linter_qi-run_2
+      - ctx2_rm-router-redirect_2:
+          requires:
+            - postcheck_rm-router-redirect
+      - rm-router-redirect:
+          requires:
+            - ctx2_rm-router-redirect_2
+      - cacher_LaunchStaging:
+          requires:
+            - ctx2_rm-router-redirect_2
+      - maker_LaunchStaging_2:
+          requires:
+            - cacher_LaunchStaging
+      - LaunchStaging:
+          requires:
+            - maker_LaunchStaging_2
+      - rerun_chen-ship:
+          requires:
+            - maker_LaunchStaging_2
+      - Alpha_chen-ship_2:
+          requires:
+            - rerun_chen-ship
+      - chen-ship:
+          requires:
+            - Alpha_chen-ship_2
+      - tap_hotel-1:
+          requires:
+            - Alpha_chen-ship_2
+      - teardown_hotel-1_2:
+          requires:
+            - tap_hotel-1
+      - hotel-1:
+          requires:
+            - teardown_hotel-1_2
+      - blue_biuld
+      - biuld:
+          requires:
+            - blue_biuld
+      - A_alpha-4:
+          requires:
+            - blue_biuld
+      - alpha-4:
+          requires:
+            - A_alpha-4
+      - bundle_run-production-artifact-bundle:
+          requires:
+            - A_alpha-4
+      - run-production-artifact-bundle:
+          requires:
+            - bundle_run-production-artifact-bundle
+      - produce_PROD_STAGE_7:
+          requires:
+            - bundle_run-production-artifact-bundle
+      - PROD_STAGE_7:
+          requires:
+            - produce_PROD_STAGE_7
+      - retry_java17-release:
+          requires:
+            - produce_PROD_STAGE_7
+      - java17-release:
+          requires:
+            - retry_java17-release
+      - stage_all-greens:
+          requires:
+            - retry_java17-release
+      - all-greens:
+          requires:
+            - stage_all-greens
+      - cook_vb-old:
+          requires:
+            - stage_all-greens
+      - vb-old:
+          requires:
+            - cook_vb-old
+      - green_update-session:
+          requires:
+            - cook_vb-old
+      - update-session:
+          requires:
+            - green_update-session
